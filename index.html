@@ -1,0 +1,518 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ABC 字母樂園</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* Layout: one-screen playground. Sky above, grass hill below; a white "flash card" asks, chunky candy tiles answer. */
+:root {
+  color-scheme: light;
+  --sky-top: #AEE0FF;
+  --sky-low: #E9F8FF;
+  --grass: #96DE84;
+  --ink: #2B2A4C;
+  --ink-soft: #6A6990;
+  --paper: #FFFFFF;
+  --line: #D5E6F2;
+  --good: #3CCB7F;
+  --good-d: #23975A;
+  --bad: #C9CEDA;
+  --gold: #FFC531;
+  --t1: #FFD84D; --t1d: #D9A400;
+  --t2: #8FE3B4; --t2d: #48B27C;
+  --t3: #8ACBFF; --t3d: #3F94D6;
+  --t4: #FFA9C4; --t4d: #DB6C91;
+  --t5: #CBB2FF; --t5d: #8F6EDB;
+  --t6: #FFBB7A; --t6d: #DB8436;
+  --font-letter: "Baloo 2", "Arial Rounded MT Bold", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  --font-text: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Heiti TC", sans-serif;
+  --r: 22px;
+}
+html, body { height: 100%; }
+html { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(130% 34% at 50% 112%, var(--grass) 0 62%, transparent 63%),
+    linear-gradient(var(--sky-top), var(--sky-low) 70%);
+  background-color: var(--sky-low);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 17px;
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+*, *::before, *::after { box-sizing: border-box; }
+button { font: inherit; color: inherit; border: 0; cursor: pointer; touch-action: manipulation; }
+button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
+
+.screen { flex: 1; min-height: 0; width: 100%; max-width: 860px; margin-inline: auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* chunky pressable button */
+.chunk {
+  background: var(--bg, var(--t1));
+  box-shadow: 0 6px 0 var(--bgd, var(--t1d));
+  border-radius: var(--r);
+  transition: transform .08s, box-shadow .08s;
+}
+.chunk:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--bgd, var(--t1d)); }
+.c1 { --bg: var(--t1); --bgd: var(--t1d); } .c2 { --bg: var(--t2); --bgd: var(--t2d); }
+.c3 { --bg: var(--t3); --bgd: var(--t3d); } .c4 { --bg: var(--t4); --bgd: var(--t4d); }
+.c5 { --bg: var(--t5); --bgd: var(--t5d); } .c6 { --bg: var(--t6); --bgd: var(--t6d); }
+
+/* ---------- top bar ---------- */
+.bar { display: flex; align-items: center; gap: 10px; flex: none; }
+.round-btn {
+  width: 52px; height: 52px; flex: none; border-radius: 50%;
+  background: var(--paper); box-shadow: 0 4px 0 var(--line);
+  font-size: 24px; display: grid; place-items: center;
+}
+.round-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.bar-mid { flex: 1; min-width: 0; display: flex; justify-content: center; }
+
+/* ---------- home ---------- */
+#home { overflow-y: auto; padding-bottom: 12px; }
+.hero { text-align: center; flex: none; }
+.logo { font-family: var(--font-letter); font-weight: 800; font-size: clamp(3rem, 15vmin, 5.5rem); line-height: 1; letter-spacing: .04em; margin: 0; }
+.logo span { display: inline-block; text-shadow: 0 5px 0 rgba(43,42,76,.14); animation: bob 2.4s ease-in-out infinite; }
+.logo span:nth-child(1) { color: #FF7A9C; }
+.logo span:nth-child(2) { color: #FFB400; animation-delay: .2s; }
+.logo span:nth-child(3) { color: #3F94D6; animation-delay: .4s; }
+.sub { margin: 2px 0 0; font-size: clamp(1.2rem, 5vmin, 1.7rem); font-weight: 800; letter-spacing: .12em; }
+.pick { margin: 0; text-align: center; color: var(--ink-soft); font-weight: 700; flex: none; }
+.levels { display: grid; grid-template-columns: 1fr; gap: 16px; flex: none; }
+@media (min-width: 620px) { .levels { grid-template-columns: 1fr 1fr; } }
+.level {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px;
+  padding: 14px 16px; text-align: left; min-height: 92px;
+}
+.level .pic { font-size: 2.6rem; line-height: 1; width: 1.3em; text-align: center; }
+.level .txt { min-width: 0; }
+.level .name { font-size: 1.35rem; font-weight: 800; display: block; }
+.level .age { font-size: .95rem; font-weight: 700; opacity: .75; display: block; }
+.level .best { font-size: 1.15rem; letter-spacing: 2px; white-space: nowrap; }
+.star-off { opacity: .28; filter: grayscale(1); }
+.cards-btn { --bg: var(--paper); --bgd: var(--line); padding: 14px; font-size: 1.25rem; font-weight: 800; flex: none; min-height: 64px; }
+
+/* ---------- game ---------- */
+.dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.dot { width: 22px; height: 22px; border-radius: 50%; background: var(--paper); box-shadow: inset 0 0 0 3px var(--line); display: grid; place-items: center; font-size: 15px; line-height: 1; }
+.dot.now { box-shadow: inset 0 0 0 4px var(--ink); }
+.dot.done { background: transparent; box-shadow: none; font-size: 21px; }
+
+.play { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; }
+.ask {
+  flex: 1; min-height: 0; background: var(--paper); border-radius: 30px;
+  box-shadow: 0 8px 0 var(--line);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 12px; position: relative; text-align: center; overflow: hidden;
+}
+.hint { margin: 0; font-size: clamp(1.05rem, 4.2vmin, 1.5rem); font-weight: 800; color: var(--ink-soft); }
+.big { font-family: var(--font-letter); font-weight: 800; font-size: clamp(5rem, 30vmin, 12rem); line-height: 1; margin: 0; }
+.emoji { font-size: clamp(4rem, 22vmin, 9rem); line-height: 1.1; margin: 0; }
+.word { font-family: var(--font-letter); font-weight: 800; font-size: clamp(2.4rem, 12vmin, 5rem); line-height: 1; margin: 0; letter-spacing: .08em; }
+.word .gap { display: inline-block; min-width: .7em; border-bottom: .12em solid var(--t4d); color: var(--good-d); line-height: .9; }
+.zh { margin: 0; font-size: clamp(1rem, 4vmin, 1.4rem); font-weight: 700; color: var(--ink-soft); }
+.again { position: absolute; top: 10px; right: 10px; }
+.pop { animation: pop .35s ease-out; }
+
+.choices { flex: none; display: grid; gap: 14px; padding-bottom: 8px; }
+.choices[data-n="3"] { grid-template-columns: repeat(3, 1fr); }
+.choices[data-n="4"] { grid-template-columns: repeat(2, 1fr); }
+.choices[data-n="6"] { grid-template-columns: repeat(3, 1fr); }
+@media (min-width: 620px) { .choices[data-n="4"] { grid-template-columns: repeat(4, 1fr); } .choices[data-n="6"] { grid-template-columns: repeat(6, 1fr); } }
+.choice {
+  font-family: var(--font-letter); font-weight: 800;
+  font-size: clamp(2.4rem, 11vmin, 4.6rem); line-height: 1;
+  height: clamp(76px, 17vmin, 130px); padding: 0;
+}
+.choice.right { --bg: var(--good); --bgd: var(--good-d); color: #fff; animation: hop .5s ease-out; }
+.choice.wrong { --bg: var(--bad); --bgd: #A9AFBE; color: #8990A3; animation: shake .4s; pointer-events: none; }
+.choices.locked .choice { pointer-events: none; }
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .play { flex-direction: row; }
+  .ask { flex: 1; }
+  .choices { flex: 1; align-content: center; padding-bottom: 0; }
+  .choices[data-n="3"] { grid-template-columns: repeat(3, 1fr); }
+  .choices[data-n="4"] { grid-template-columns: repeat(2, 1fr); }
+  .choices[data-n="6"] { grid-template-columns: repeat(3, 1fr); }
+  .choice { height: clamp(64px, 30vh, 110px); font-size: clamp(2rem, 16vh, 3.6rem); }
+  .big { font-size: clamp(4rem, 42vh, 9rem); }
+  .emoji { font-size: clamp(3rem, 26vh, 6rem); }
+  .word { font-size: clamp(2rem, 15vh, 3.6rem); }
+}
+
+/* ---------- result ---------- */
+#result { align-items: center; justify-content: center; text-align: center; gap: 18px; overflow-y: auto; }
+.result-card { background: var(--paper); border-radius: 30px; box-shadow: 0 8px 0 var(--line); padding: 24px 20px; width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 10px; }
+.result-stars { font-size: clamp(3rem, 16vmin, 5rem); line-height: 1; margin: 0; }
+.result-stars span { display: inline-block; animation: pop .5s ease-out backwards; }
+.result-stars span:nth-child(2) { animation-delay: .25s; } .result-stars span:nth-child(3) { animation-delay: .5s; }
+.result-title { font-size: clamp(1.8rem, 8vmin, 2.6rem); font-weight: 800; margin: 0; }
+.result-score { margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--ink-soft); }
+.result-btns { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 460px; }
+.result-btns button { padding: 14px; font-size: 1.35rem; font-weight: 800; min-height: 64px; }
+#confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+#confetti i { position: absolute; top: -12vh; font-style: normal; font-size: 30px; animation: fall linear forwards; }
+
+/* ---------- cards ---------- */
+#cards { gap: 14px; }
+.card-title { font-size: 1.3rem; font-weight: 800; margin: 0; }
+.flash {
+  --bg: var(--paper); --bgd: var(--line);
+  flex: none; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4px 12px;
+  padding: 14px; border-radius: 30px; text-align: center; width: 100%;
+}
+.flash .pair { font-family: var(--font-letter); font-weight: 800; font-size: clamp(3.4rem, 18vmin, 7rem); line-height: 1; }
+.flash .pair small { font-size: .75em; color: var(--t3d); }
+.flash .emoji { font-size: clamp(3.4rem, 18vmin, 7rem); }
+.flash .word { grid-column: 1 / -1; font-size: clamp(1.8rem, 8vmin, 3rem); letter-spacing: .04em; }
+.flash .word b { color: #E0527C; }
+.flash .zh { grid-column: 1 / -1; }
+.abc { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 12px; align-content: start; padding: 2px 2px 12px; }
+.abc button { font-family: var(--font-letter); font-weight: 800; font-size: 1.8rem; height: 56px; border-radius: 16px; padding: 0; line-height: 1; box-shadow: 0 4px 0 var(--bgd); }
+.abc button.on { outline: 4px solid var(--ink); outline-offset: 1px; }
+
+@keyframes bob { 50% { transform: translateY(-8px) rotate(-3deg); } }
+@keyframes pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes hop { 30% { transform: translateY(-14px) scale(1.08); } 60% { transform: translateY(0); } 80% { transform: translateY(-5px); } }
+@keyframes shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+@keyframes fall { to { transform: translateY(125vh) rotate(540deg); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<!-- ============ 首頁 ============ -->
+<section class="screen" id="home">
+  <div class="bar">
+    <span class="bar-mid"></span>
+    <button class="round-btn" id="soundBtn" aria-label="聲音開關">🔊</button>
+  </div>
+  <div class="hero">
+    <h1 class="logo" aria-label="ABC"><span>A</span><span>B</span><span>C</span></h1>
+    <p class="sub">字母樂園</p>
+  </div>
+  <p class="pick">選一個遊戲開始玩</p>
+  <div class="levels" id="levels"></div>
+  <button class="chunk cards-btn" id="openCards">📖 字母卡 A – Z</button>
+</section>
+
+<!-- ============ 遊戲 ============ -->
+<section class="screen" id="game" hidden>
+  <div class="bar">
+    <button class="round-btn" data-home aria-label="回首頁">🏠</button>
+    <div class="bar-mid"><div class="dots" id="dots"></div></div>
+    <button class="round-btn" id="soundBtn2" aria-label="聲音開關">🔊</button>
+  </div>
+  <div class="play">
+    <div class="ask" id="ask">
+      <button class="round-btn again" id="sayAgain" aria-label="再聽一次">👂</button>
+      <p class="hint" id="hint"></p>
+      <div id="askBody"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+  </div>
+</section>
+
+<!-- ============ 結果 ============ -->
+<section class="screen" id="result" hidden>
+  <div class="result-card">
+    <p class="result-stars" id="resStars"></p>
+    <p class="result-title" id="resTitle"></p>
+    <p class="result-score" id="resScore"></p>
+  </div>
+  <div class="result-btns">
+    <button class="chunk c2" id="nextLevel">下一關 ➡️</button>
+    <button class="chunk c1" id="playAgain">🔁 再玩一次</button>
+    <button class="chunk c3" data-home>🏠 回首頁</button>
+  </div>
+</section>
+
+<!-- ============ 字母卡 ============ -->
+<section class="screen" id="cards" hidden>
+  <div class="bar">
+    <button class="round-btn" data-home aria-label="回首頁">🏠</button>
+    <div class="bar-mid"><p class="card-title">點字母，聽聽看</p></div>
+    <span style="width:52px"></span>
+  </div>
+  <button class="chunk flash" id="flash" aria-label="再聽一次"></button>
+  <div class="abc" id="abc"></div>
+</section>
+
+<div id="confetti" aria-hidden="true"></div>
+
+<script>
+(function () {
+  'use strict';
+  var ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  // 每個字母一個代表單字：[英文, 圖, 中文]
+  var CARD = {
+    A: ['apple', '🍎', '蘋果'], B: ['bear', '🐻', '熊'], C: ['cat', '🐱', '貓'], D: ['dog', '🐶', '狗'],
+    E: ['egg', '🥚', '蛋'], F: ['fish', '🐟', '魚'], G: ['grapes', '🍇', '葡萄'], H: ['hat', '🎩', '帽子'],
+    I: ['ice cream', '🍦', '冰淇淋'], J: ['juice', '🧃', '果汁'], K: ['key', '🔑', '鑰匙'], L: ['lion', '🦁', '獅子'],
+    M: ['moon', '🌙', '月亮'], N: ['nose', '👃', '鼻子'], O: ['orange', '🍊', '柳橙'], P: ['pig', '🐷', '豬'],
+    Q: ['queen', '👸', '皇后'], R: ['rabbit', '🐰', '兔子'], S: ['sun', '☀️', '太陽'], T: ['tiger', '🐯', '老虎'],
+    U: ['umbrella', '☂️', '雨傘'], V: ['violin', '🎻', '小提琴'], W: ['whale', '🐳', '鯨魚'], X: ['x-ray', '🦴', 'X 光'],
+    Y: ['yo-yo', '🪀', '溜溜球'], Z: ['zebra', '🦓', '斑馬']
+  };
+  // 拼字挑戰用的短單字
+  var SHORT = [
+    ['cat', '🐱', '貓'], ['dog', '🐶', '狗'], ['sun', '☀️', '太陽'], ['pig', '🐷', '豬'], ['egg', '🥚', '蛋'],
+    ['hat', '🎩', '帽子'], ['key', '🔑', '鑰匙'], ['bus', '🚌', '公車'], ['bee', '🐝', '蜜蜂'], ['cow', '🐮', '牛'],
+    ['car', '🚗', '車子'], ['fish', '🐟', '魚'], ['lion', '🦁', '獅子'], ['moon', '🌙', '月亮'], ['bear', '🐻', '熊'],
+    ['duck', '🦆', '鴨子'], ['frog', '🐸', '青蛙'], ['cake', '🍰', '蛋糕'], ['star', '⭐', '星星'], ['tree', '🌳', '樹'],
+    ['book', '📖', '書'], ['milk', '🥛', '牛奶'], ['bird', '🐦', '小鳥'], ['ball', '⚽', '球'], ['nose', '👃', '鼻子']
+  ];
+  var LOOKALIKE = {
+    b: 'dpq', d: 'bpq', p: 'qbd', q: 'pdb', m: 'nw', n: 'mhu', u: 'nv', v: 'uwy', w: 'mv', i: 'lj', l: 'it', j: 'i',
+    a: 'eo', e: 'ac', c: 'eo', o: 'ac', f: 't', t: 'fl', h: 'n', g: 'qy', y: 'gv', s: 'z', z: 's',
+    M: 'WN', W: 'MV', N: 'MZ', O: 'QCD', Q: 'OG', C: 'GO', G: 'CQ', E: 'FB', F: 'EP', P: 'RB', R: 'PB', B: 'PR',
+    D: 'OB', I: 'LT', L: 'IT', T: 'IL', U: 'V', V: 'UW', S: 'Z', Z: 'SN', K: 'XH', X: 'KY', Y: 'XV', H: 'KN', A: 'VH', J: 'IL'
+  };
+  var LEVELS = [
+    { name: '找一樣的', age: '幼稚園中班', pic: '🐥', hint: '找出一樣的字母', n: 3 },
+    { name: '大小寫配對', age: '幼稚園大班', pic: '🐰', hint: '找出它的好朋友', n: 4 },
+    { name: '開頭字母', age: '小學一、二年級', pic: '🦊', hint: '第一個字母是什麼？', n: 4 },
+    { name: '拼字挑戰', age: '小學三年級以上', pic: '🦁', hint: '少了哪一個字母？', n: 6 }
+  ];
+  var ROUND = 8;
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = ['home', 'game', 'result', 'cards'];
+
+  /* ---------- 儲存 ---------- */
+  var save = { best: [0, 0, 0, 0], sound: true };
+  try { var s = JSON.parse(localStorage.getItem('abc-land') || 'null'); if (s && s.best) save = s; } catch (e) {}
+  function persist() { try { localStorage.setItem('abc-land', JSON.stringify(save)); } catch (e) {} }
+
+  /* ---------- 聲音 ---------- */
+  var actx = null;
+  function tone(freqs, dur, type) {
+    if (!save.sound) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      freqs.forEach(function (f, i) {
+        var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * dur;
+        o.type = type || 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 1.4);
+        o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur * 1.5);
+      });
+    } catch (e) {}
+  }
+  function say(text) {
+    if (!save.sound || !text) return;
+    try {
+      var ss = window.speechSynthesis; if (!ss) return;
+      ss.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US'; u.rate = 0.8; u.pitch = 1.15;
+      ss.speak(u);
+    } catch (e) {}
+  }
+  function paintSound() {
+    $('soundBtn').textContent = $('soundBtn2').textContent = save.sound ? '🔊' : '🔇';
+  }
+  function toggleSound() {
+    save.sound = !save.sound; persist(); paintSound();
+    if (!save.sound) { try { window.speechSynthesis.cancel(); } catch (e) {} } else tone([660], 0.1);
+  }
+
+  /* ---------- 小工具 ---------- */
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function stars(n, total) { var h = ''; for (var i = 0; i < total; i++) h += '<span' + (i < n ? '' : ' class="star-off"') + '>⭐</span>'; return h; }
+  function show(id) {
+    screens.forEach(function (s) { $(s).hidden = s !== id; });
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+  }
+  // 選項：正確答案 + 長得像的字母 + 隨機字母
+  function options(answer, n) {
+    var lower = answer === answer.toLowerCase();
+    var pool = ABC.map(function (c) { return lower ? c.toLowerCase() : c; });
+    var out = [answer];
+    shuffle((LOOKALIKE[answer] || '').split('')).slice(0, 2).forEach(function (c) { if (c && out.length < n) out.push(c); });
+    shuffle(pool).forEach(function (c) { if (out.length < n && out.indexOf(c) < 0) out.push(c); });
+    return shuffle(out);
+  }
+
+  /* ---------- 出題 ---------- */
+  function buildRound(level) {
+    if (level === 0 || level === 1) {
+      return shuffle(ABC).slice(0, ROUND).map(function (L) {
+        if (level === 0) return { html: '<p class="big">' + L + '</p>', answer: L, speak: L, after: L };
+        var up = Math.random() < 0.6, shown = up ? L : L.toLowerCase(), ans = up ? L.toLowerCase() : L;
+        return { html: '<p class="big">' + shown + '</p>', answer: ans, speak: L, after: L, done: '<p class="big">' + L + ' ' + L.toLowerCase() + '</p>' };
+      });
+    }
+    if (level === 2) {
+      return shuffle(ABC).slice(0, ROUND).map(function (L) {
+        var w = CARD[L];
+        return {
+          html: wordHtml(w, 0, false), done: wordHtml(w, 0, true),
+          answer: L, speak: w[0], after: L + '. ' + w[0], upper: true
+        };
+      });
+    }
+    return shuffle(SHORT).slice(0, ROUND).map(function (w) {
+      var i = Math.floor(Math.random() * w[0].length);
+      return { html: wordHtml(w, i, false), done: wordHtml(w, i, true), answer: w[0][i], speak: w[0], after: w[0] };
+    });
+  }
+  function wordHtml(w, gapAt, filled) {
+    var letters = w[0].split('').map(function (ch, i) {
+      var c = i === 0 ? ch.toUpperCase() : ch;
+      if (i !== gapAt) return c;
+      return '<span class="gap">' + (filled ? c : '&nbsp;') + '</span>';
+    }).join('');
+    return '<p class="emoji">' + w[1] + '</p><p class="word">' + letters + '</p><p class="zh">' + w[2] + '</p>';
+  }
+
+  /* ---------- 遊戲流程 ---------- */
+  var G = { level: 0, qs: [], i: 0, first: [], clean: true, timer: 0 };
+
+  function startLevel(level) {
+    clearTimeout(G.timer);
+    G.level = level; G.qs = buildRound(level); G.i = 0; G.first = [];
+    $('hint').textContent = LEVELS[level].hint;
+    $('choices').dataset.n = LEVELS[level].n;
+    show('game');
+    ask();
+  }
+  function paintDots() {
+    var h = '';
+    for (var k = 0; k < ROUND; k++) {
+      if (k < G.i) h += '<span class="dot done">' + (G.first[k] ? '⭐' : '🙂') + '</span>';
+      else h += '<span class="dot' + (k === G.i ? ' now' : '') + '"></span>';
+    }
+    $('dots').innerHTML = h;
+  }
+  function ask() {
+    var q = G.qs[G.i];
+    G.clean = true;
+    paintDots();
+    var body = $('askBody');
+    body.innerHTML = q.html;
+    body.classList.remove('pop'); void body.offsetWidth; body.classList.add('pop');
+    var box = $('choices');
+    box.classList.remove('locked');
+    box.innerHTML = '';
+    options(q.answer, LEVELS[G.level].n).forEach(function (c, k) {
+      var b = document.createElement('button');
+      b.className = 'chunk choice c' + (k % 6 + 1);
+      b.textContent = c;
+      b.addEventListener('click', function () { answer(b, c); });
+      box.appendChild(b);
+    });
+    say(q.speak);
+  }
+  function answer(btn, c) {
+    var q = G.qs[G.i];
+    if (c !== q.answer) {
+      G.clean = false;
+      btn.classList.add('wrong'); btn.disabled = true;
+      tone([220, 180], 0.12, 'triangle');
+      return;
+    }
+    btn.classList.add('right');
+    $('choices').classList.add('locked');
+    if (q.done) $('askBody').innerHTML = q.done;
+    tone([523, 659, 784], 0.1);
+    say(q.after);
+    G.first[G.i] = G.clean;
+    G.i++;
+    paintDots();
+    G.timer = setTimeout(function () { G.i < ROUND ? ask() : finish(); }, 1500);
+  }
+  function finish() {
+    var good = G.first.filter(Boolean).length;
+    var st = good >= ROUND - 1 ? 3 : good >= ROUND - 3 ? 2 : 1;
+    if (st > save.best[G.level]) { save.best[G.level] = st; persist(); }
+    $('resStars').innerHTML = stars(st, 3);
+    $('resTitle').textContent = st === 3 ? '太厲害了！' : st === 2 ? '好棒喔！' : '完成了！';
+    $('resScore').textContent = '一次就答對 ' + good + ' 題（共 ' + ROUND + ' 題）';
+    $('nextLevel').hidden = G.level >= LEVELS.length - 1;
+    paintHome();
+    show('result');
+    tone([523, 659, 784, 1047], 0.14);
+    confetti();
+  }
+  function confetti() {
+    var box = $('confetti'), bits = ['⭐', '🎈', '🎉', '💛', '🌈', '✨'];
+    box.innerHTML = '';
+    for (var k = 0; k < 26; k++) {
+      var e = document.createElement('i');
+      e.textContent = pick(bits);
+      e.style.left = Math.random() * 96 + '%';
+      e.style.animationDuration = 2 + Math.random() * 2 + 's';
+      e.style.animationDelay = Math.random() * 0.8 + 's';
+      box.appendChild(e);
+    }
+    setTimeout(function () { box.innerHTML = ''; }, 5200);
+  }
+
+  /* ---------- 首頁 ---------- */
+  function paintHome() {
+    var box = $('levels');
+    box.innerHTML = '';
+    LEVELS.forEach(function (L, k) {
+      var b = document.createElement('button');
+      b.className = 'chunk level c' + (k + 1);
+      b.innerHTML = '<span class="pic">' + L.pic + '</span>' +
+        '<span class="txt"><span class="name">' + L.name + '</span><span class="age">' + L.age + '</span></span>' +
+        '<span class="best" aria-label="最佳成績 ' + save.best[k] + ' 顆星">' + stars(save.best[k], 3) + '</span>';
+      b.addEventListener('click', function () { tone([660], 0.08); startLevel(k); });
+      box.appendChild(b);
+    });
+  }
+
+  /* ---------- 字母卡 ---------- */
+  var cur = 'A';
+  function paintCard(L, speak) {
+    cur = L;
+    var w = CARD[L], word = w[0];
+    $('flash').innerHTML = '<span class="pair">' + L + '<small>' + L.toLowerCase() + '</small></span>' +
+      '<span class="emoji">' + w[1] + '</span>' +
+      '<span class="word"><b>' + word[0].toUpperCase() + '</b>' + word.slice(1) + '</span>' +
+      '<span class="zh">' + w[2] + '</span>';
+    Array.prototype.forEach.call($('abc').children, function (b) { b.classList.toggle('on', b.textContent === L); });
+    if (speak) say(L + '. ' + word);
+  }
+  function buildCards() {
+    var box = $('abc');
+    ABC.forEach(function (L, k) {
+      var b = document.createElement('button');
+      b.className = 'chunk c' + (k % 6 + 1);
+      b.textContent = L;
+      b.addEventListener('click', function () { paintCard(L, true); });
+      box.appendChild(b);
+    });
+    $('flash').addEventListener('click', function () { paintCard(cur, true); });
+  }
+
+  /* ---------- 綁定 ---------- */
+  $('soundBtn').addEventListener('click', toggleSound);
+  $('soundBtn2').addEventListener('click', toggleSound);
+  $('sayAgain').addEventListener('click', function () { if (G.qs[G.i]) say(G.qs[G.i].speak); });
+  $('playAgain').addEventListener('click', function () { startLevel(G.level); });
+  $('nextLevel').addEventListener('click', function () { startLevel(G.level + 1); });
+  $('openCards').addEventListener('click', function () { show('cards'); paintCard(cur, true); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-home]'), function (b) {
+    b.addEventListener('click', function () { clearTimeout(G.timer); $('confetti').innerHTML = ''; show('home'); });
+  });
+
+  paintSound(); paintHome(); buildCards(); paintCard('A', false);
+})();
+</script>
