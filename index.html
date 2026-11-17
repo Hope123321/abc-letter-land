@@ -140,6 +140,9 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
 .choice.right { --bg: var(--good); --bgd: var(--good-d); color: #fff; animation: hop .5s ease-out; }
 .choice.wrong { --bg: var(--bad); --bgd: #A9AFBE; color: #8990A3; animation: shake .4s; pointer-events: none; }
 .choices.locked .choice { pointer-events: none; }
+.choice.wordy { font-size: clamp(1.25rem, 5.4vmin, 2.2rem); letter-spacing: .02em; padding: 0 6px; }
+.choice.used { --bg: var(--good); --bgd: var(--good-d); color: #fff; opacity: .5; pointer-events: none; }
+.choice.nope { animation: shake .4s; }
 
 @media (orientation: landscape) and (max-height: 520px) {
   .play { flex-direction: row; }
@@ -243,7 +246,7 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
 <section class="screen" id="cards" hidden>
   <div class="bar">
     <button class="round-btn" data-home aria-label="回首頁">🏠</button>
-    <div class="bar-mid"><p class="card-title">點字母，聽聽看</p></div>
+    <div class="bar-mid"><p class="card-title">點字母聽聽看，點卡片換單字</p></div>
     <span style="width:52px"></span>
   </div>
   <button class="chunk flash" id="flash" aria-label="再聽一次"></button>
@@ -256,24 +259,51 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
 (function () {
   'use strict';
   var ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  // 每個字母一個代表單字：[英文, 圖, 中文]
-  var CARD = {
-    A: ['apple', '🍎', '蘋果'], B: ['bear', '🐻', '熊'], C: ['cat', '🐱', '貓'], D: ['dog', '🐶', '狗'],
-    E: ['egg', '🥚', '蛋'], F: ['fish', '🐟', '魚'], G: ['grapes', '🍇', '葡萄'], H: ['hat', '🎩', '帽子'],
-    I: ['ice cream', '🍦', '冰淇淋'], J: ['juice', '🧃', '果汁'], K: ['key', '🔑', '鑰匙'], L: ['lion', '🦁', '獅子'],
-    M: ['moon', '🌙', '月亮'], N: ['nose', '👃', '鼻子'], O: ['orange', '🍊', '柳橙'], P: ['pig', '🐷', '豬'],
-    Q: ['queen', '👸', '皇后'], R: ['rabbit', '🐰', '兔子'], S: ['sun', '☀️', '太陽'], T: ['tiger', '🐯', '老虎'],
-    U: ['umbrella', '☂️', '雨傘'], V: ['violin', '🎻', '小提琴'], W: ['whale', '🐳', '鯨魚'], X: ['x-ray', '🦴', 'X 光'],
-    Y: ['yo-yo', '🪀', '溜溜球'], Z: ['zebra', '🦓', '斑馬']
+  // 每個字母的單字：[英文, 圖, 中文]
+  var WORDS = {
+    A: [['apple', '🍎', '蘋果'], ['ant', '🐜', '螞蟻'], ['airplane', '✈️', '飛機']],
+    B: [['bear', '🐻', '熊'], ['banana', '🍌', '香蕉'], ['bus', '🚌', '公車']],
+    C: [['cat', '🐱', '貓'], ['cake', '🍰', '蛋糕'], ['car', '🚗', '車子']],
+    D: [['dog', '🐶', '狗'], ['duck', '🦆', '鴨子'], ['door', '🚪', '門']],
+    E: [['egg', '🥚', '蛋'], ['elephant', '🐘', '大象'], ['eye', '👁️', '眼睛']],
+    F: [['fish', '🐟', '魚'], ['frog', '🐸', '青蛙'], ['flower', '🌸', '花']],
+    G: [['grapes', '🍇', '葡萄'], ['giraffe', '🦒', '長頸鹿'], ['guitar', '🎸', '吉他']],
+    H: [['hat', '🎩', '帽子'], ['horse', '🐴', '馬'], ['house', '🏠', '房子']],
+    I: [['ice cream', '🍦', '冰淇淋'], ['ice', '🧊', '冰塊'], ['island', '🏝️', '小島']],
+    J: [['juice', '🧃', '果汁'], ['jeans', '👖', '牛仔褲'], ['jacket', '🧥', '外套']],
+    K: [['key', '🔑', '鑰匙'], ['koala', '🐨', '無尾熊'], ['kite', '🪁', '風箏']],
+    L: [['lion', '🦁', '獅子'], ['lemon', '🍋', '檸檬'], ['leaf', '🍃', '葉子']],
+    M: [['moon', '🌙', '月亮'], ['monkey', '🐵', '猴子'], ['milk', '🥛', '牛奶']],
+    N: [['nose', '👃', '鼻子'], ['nut', '🥜', '堅果'], ['night', '🌃', '夜晚']],
+    O: [['orange', '🍊', '柳橙'], ['owl', '🦉', '貓頭鷹'], ['octopus', '🐙', '章魚']],
+    P: [['pig', '🐷', '豬'], ['panda', '🐼', '熊貓'], ['pizza', '🍕', '披薩']],
+    Q: [['queen', '👸', '皇后'], ['question', '❓', '問題'], ['quiet', '🤫', '安靜']],
+    R: [['rabbit', '🐰', '兔子'], ['rainbow', '🌈', '彩虹'], ['robot', '🤖', '機器人']],
+    S: [['sun', '☀️', '太陽'], ['star', '⭐', '星星'], ['snake', '🐍', '蛇']],
+    T: [['tiger', '🐯', '老虎'], ['tree', '🌳', '樹'], ['train', '🚂', '火車']],
+    U: [['umbrella', '☂️', '雨傘'], ['unicorn', '🦄', '獨角獸'], ['up', '⬆️', '上面']],
+    V: [['violin', '🎻', '小提琴'], ['van', '🚐', '廂型車'], ['volcano', '🌋', '火山']],
+    W: [['whale', '🐳', '鯨魚'], ['watermelon', '🍉', '西瓜'], ['watch', '⌚', '手錶']],
+    X: [['x-ray', '🦴', 'X 光']],
+    Y: [['yo-yo', '🪀', '溜溜球'], ['yellow', '💛', '黃色'], ['yawn', '🥱', '打哈欠']],
+    Z: [['zebra', '🦓', '斑馬'], ['zero', '0️⃣', '零']]
   };
-  // 拼字挑戰用的短單字
-  var SHORT = [
-    ['cat', '🐱', '貓'], ['dog', '🐶', '狗'], ['sun', '☀️', '太陽'], ['pig', '🐷', '豬'], ['egg', '🥚', '蛋'],
-    ['hat', '🎩', '帽子'], ['key', '🔑', '鑰匙'], ['bus', '🚌', '公車'], ['bee', '🐝', '蜜蜂'], ['cow', '🐮', '牛'],
-    ['car', '🚗', '車子'], ['fish', '🐟', '魚'], ['lion', '🦁', '獅子'], ['moon', '🌙', '月亮'], ['bear', '🐻', '熊'],
-    ['duck', '🦆', '鴨子'], ['frog', '🐸', '青蛙'], ['cake', '🍰', '蛋糕'], ['star', '⭐', '星星'], ['tree', '🌳', '樹'],
-    ['book', '📖', '書'], ['milk', '🥛', '牛奶'], ['bird', '🐦', '小鳥'], ['ball', '⚽', '球'], ['nose', '👃', '鼻子']
+  // 其他常見短單字（補字母、拼單字、看圖選單字用）
+  var MORE = [
+    ['cow', '🐮', '牛'], ['bee', '🐝', '蜜蜂'], ['book', '📖', '書'], ['bird', '🐦', '小鳥'], ['ball', '⚽', '球'],
+    ['bed', '🛏️', '床'], ['fox', '🦊', '狐狸'], ['hen', '🐔', '母雞'], ['pen', '🖊️', '筆'], ['bag', '🎒', '書包'],
+    ['ship', '🚢', '船'], ['shoe', '👟', '鞋子'], ['sock', '🧦', '襪子'], ['rain', '🌧️', '雨'], ['corn', '🌽', '玉米'],
+    ['bread', '🍞', '麵包'], ['mouse', '🐭', '老鼠'], ['sheep', '🐑', '綿羊'], ['goat', '🐐', '山羊'], ['crab', '🦀', '螃蟹'],
+    ['bell', '🔔', '鈴鐺'], ['drum', '🥁', '鼓'], ['gift', '🎁', '禮物'], ['hand', '✋', '手'], ['foot', '🦶', '腳'],
+    ['fire', '🔥', '火'], ['rice', '🍚', '飯'], ['kiwi', '🥝', '奇異果'], ['bike', '🚲', '腳踏車'], ['boat', '⛵', '小船']
   ];
+  var ALL = [];
+  ABC.forEach(function (L) { WORDS[L].forEach(function (w) { ALL.push(w); }); });
+  ALL = ALL.concat(MORE);
+  var PLAIN = ALL.filter(function (w) { return /^[a-z]+$/.test(w[0]); });
+  var GAP_WORDS = PLAIN.filter(function (w) { return w[0].length >= 3 && w[0].length <= 5; });
+  var SPELL_WORDS = PLAIN.filter(function (w) { return w[0].length >= 3 && w[0].length <= 4; });
+
   var LOOKALIKE = {
     b: 'dpq', d: 'bpq', p: 'qbd', q: 'pdb', m: 'nw', n: 'mhu', u: 'nv', v: 'uwy', w: 'mv', i: 'lj', l: 'it', j: 'i',
     a: 'eo', e: 'ac', c: 'eo', o: 'ac', f: 't', t: 'fl', h: 'n', g: 'qy', y: 'gv', s: 'z', z: 's',
@@ -281,18 +311,31 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
     D: 'OB', I: 'LT', L: 'IT', T: 'IL', U: 'V', V: 'UW', S: 'Z', Z: 'SN', K: 'XH', X: 'KY', Y: 'XV', H: 'KN', A: 'VH', J: 'IL'
   };
   var LEVELS = [
-    { name: '找一樣的', age: '幼稚園中班', pic: '🐥', hint: '找出一樣的字母', n: 3 },
-    { name: '大小寫配對', age: '幼稚園大班', pic: '🐰', hint: '找出它的好朋友', n: 4 },
-    { name: '開頭字母', age: '小學一、二年級', pic: '🦊', hint: '第一個字母是什麼？', n: 4 },
-    { name: '拼字挑戰', age: '小學三年級以上', pic: '🦁', hint: '少了哪一個字母？', n: 6 }
+    { key: 'same', name: '找一樣的', age: '幼稚園中班', pic: '🐥', hint: '找出一樣的字母', n: 3 },
+    { key: 'pair', name: '大小寫配對', age: '幼稚園大班', pic: '🐰', hint: '找出它的好朋友', n: 4 },
+    { key: 'order', name: '字母排隊', age: '大班～小學一年級', pic: '🐛', hint: '哪個字母不見了？', n: 4 },
+    { key: 'first', name: '開頭字母', age: '小學一、二年級', pic: '🦊', hint: '第一個字母是什麼？', n: 4 },
+    { key: 'word', name: '看圖選單字', age: '小學二、三年級', pic: '🐼', hint: '這是哪個單字？', n: 4 },
+    { key: 'gap', name: '補字母', age: '小學三、四年級', pic: '🦁', hint: '少了哪一個字母？', n: 6 },
+    { key: 'spell', name: '拼單字', age: '小學四年級以上', pic: '🦄', hint: '照順序點字母，拼出單字', n: 6 }
   ];
   var ROUND = 8;
   var $ = function (id) { return document.getElementById(id); };
   var screens = ['home', 'game', 'result', 'cards'];
 
   /* ---------- 儲存 ---------- */
-  var save = { best: [0, 0, 0, 0], sound: true };
-  try { var s = JSON.parse(localStorage.getItem('abc-land') || 'null'); if (s && s.best) save = s; } catch (e) {}
+  var save = { best: {}, sound: true };
+  try {
+    var s = JSON.parse(localStorage.getItem('abc-land') || 'null');
+    if (s && s.best) {
+      if (Array.isArray(s.best)) { // 舊版只有四關
+        var old = ['same', 'pair', 'first', 'gap'], nb = {};
+        s.best.forEach(function (v, i) { if (old[i]) nb[old[i]] = v; });
+        s.best = nb;
+      }
+      save = { best: s.best, sound: s.sound !== false };
+    }
+  } catch (e) {}
   function persist() { try { localStorage.setItem('abc-land', JSON.stringify(save)); } catch (e) {} }
 
   /* ---------- 聲音 ---------- */
@@ -322,12 +365,13 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
       ss.speak(u);
     } catch (e) {}
   }
+  function hush() { try { window.speechSynthesis.cancel(); } catch (e) {} }
   function paintSound() {
     $('soundBtn').textContent = $('soundBtn2').textContent = save.sound ? '🔊' : '🔇';
   }
   function toggleSound() {
     save.sound = !save.sound; persist(); paintSound();
-    if (!save.sound) { try { window.speechSynthesis.cancel(); } catch (e) {} } else tone([660], 0.1);
+    if (!save.sound) hush(); else tone([660], 0.1);
   }
 
   /* ---------- 小工具 ---------- */
@@ -336,7 +380,7 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
   function stars(n, total) { var h = ''; for (var i = 0; i < total; i++) h += '<span' + (i < n ? '' : ' class="star-off"') + '>⭐</span>'; return h; }
   function show(id) {
     screens.forEach(function (s) { $(s).hidden = s !== id; });
-    try { window.speechSynthesis.cancel(); } catch (e) {}
+    hush();
   }
   // 選項：正確答案 + 長得像的字母 + 隨機字母
   function options(answer, n) {
@@ -347,45 +391,88 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
     shuffle(pool).forEach(function (c) { if (out.length < n && out.indexOf(c) < 0) out.push(c); });
     return shuffle(out);
   }
-
-  /* ---------- 出題 ---------- */
-  function buildRound(level) {
-    if (level === 0 || level === 1) {
-      return shuffle(ABC).slice(0, ROUND).map(function (L) {
-        if (level === 0) return { html: '<p class="big">' + L + '</p>', answer: L, speak: L, after: L };
-        var up = Math.random() < 0.6, shown = up ? L : L.toLowerCase(), ans = up ? L.toLowerCase() : L;
-        return { html: '<p class="big">' + shown + '</p>', answer: ans, speak: L, after: L, done: '<p class="big">' + L + ' ' + L.toLowerCase() + '</p>' };
-      });
-    }
-    if (level === 2) {
-      return shuffle(ABC).slice(0, ROUND).map(function (L) {
-        var w = CARD[L];
-        return {
-          html: wordHtml(w, 0, false), done: wordHtml(w, 0, true),
-          answer: L, speak: w[0], after: L + '. ' + w[0], upper: true
-        };
-      });
-    }
-    return shuffle(SHORT).slice(0, ROUND).map(function (w) {
-      var i = Math.floor(Math.random() * w[0].length);
-      return { html: wordHtml(w, i, false), done: wordHtml(w, i, true), answer: w[0][i], speak: w[0], after: w[0] };
-    });
-  }
-  function wordHtml(w, gapAt, filled) {
+  function picHtml(w) { return '<p class="emoji">' + w[1] + '</p>'; }
+  function zhHtml(w) { return '<p class="zh">' + w[2] + '</p>'; }
+  // 單字，第 gapAt 個字母挖空；cap 表示第一個字母大寫
+  function wordHtml(w, gapAt, filled, cap) {
     var letters = w[0].split('').map(function (ch, i) {
-      var c = i === 0 ? ch.toUpperCase() : ch;
+      var c = cap && i === 0 ? ch.toUpperCase() : ch;
       if (i !== gapAt) return c;
       return '<span class="gap">' + (filled ? c : '&nbsp;') + '</span>';
     }).join('');
-    return '<p class="emoji">' + w[1] + '</p><p class="word">' + letters + '</p><p class="zh">' + w[2] + '</p>';
+    return picHtml(w) + '<p class="word">' + letters + '</p>' + zhHtml(w);
+  }
+  // 拼單字：已拼好的字母顯示出來，其餘是空格
+  function spellHtml(w, pos) {
+    var letters = w[0].split('').map(function (ch, i) {
+      return '<span class="gap">' + (i < pos ? ch : '&nbsp;') + '</span>';
+    }).join(' ');
+    return picHtml(w) + '<p class="word">' + letters + '</p>' + zhHtml(w);
+  }
+
+  /* ---------- 出題 ---------- */
+  function buildRound(key) {
+    var n = LEVELS.filter(function (l) { return l.key === key; })[0].n;
+    if (key === 'same') {
+      return shuffle(ABC).slice(0, ROUND).map(function (L) {
+        return { html: '<p class="big">' + L + '</p>', answer: L, choices: options(L, n), speak: L, after: L };
+      });
+    }
+    if (key === 'pair') {
+      return shuffle(ABC).slice(0, ROUND).map(function (L) {
+        var up = Math.random() < 0.6, shown = up ? L : L.toLowerCase(), ans = up ? L.toLowerCase() : L;
+        return { html: '<p class="big">' + shown + '</p>', done: '<p class="big">' + L + ' ' + L.toLowerCase() + '</p>',
+          answer: ans, choices: options(ans, n), speak: L, after: L };
+      });
+    }
+    if (key === 'order') {
+      // 連續四個字母，中間或最後挖掉一個
+      return shuffle(ABC).slice(0, ROUND).map(function (L) {
+        var at = ABC.indexOf(L), off = 1 + Math.floor(Math.random() * 3);
+        var start = Math.min(Math.max(at - off, 0), 22); off = at - start;
+        var row = ABC.slice(start, start + 4);
+        function line(filled) {
+          return '<p class="word">' + row.map(function (c, i) {
+            return i === off ? '<span class="gap">' + (filled ? c : '&nbsp;') + '</span>' : c;
+          }).join(' ') + '</p>';
+        }
+        return { html: line(false), done: line(true), answer: L, choices: options(L, n), speak: '', after: row.join(', ') };
+      });
+    }
+    if (key === 'first') {
+      return shuffle(ABC).slice(0, ROUND).map(function (L) {
+        var w = pick(WORDS[L]);
+        return { html: wordHtml(w, 0, false, true), done: wordHtml(w, 0, true, true),
+          answer: L, choices: options(L, n), speak: w[0], after: L + '. ' + w[0] };
+      });
+    }
+    if (key === 'word') {
+      return shuffle(ALL).slice(0, ROUND).map(function (w) {
+        var others = shuffle(ALL.filter(function (x) { return x[0] !== w[0]; })).slice(0, n - 1).map(function (x) { return x[0]; });
+        return { html: picHtml(w) + zhHtml(w), done: picHtml(w) + '<p class="word">' + w[0] + '</p>' + zhHtml(w),
+          answer: w[0], choices: shuffle(others.concat(w[0])), wordy: true, speak: '', after: w[0] };
+      });
+    }
+    if (key === 'gap') {
+      return shuffle(GAP_WORDS).slice(0, ROUND).map(function (w) {
+        var i = Math.floor(Math.random() * w[0].length);
+        return { html: wordHtml(w, i, false, false), done: wordHtml(w, i, true, false),
+          answer: w[0][i], choices: options(w[0][i], n), speak: w[0], after: w[0] };
+      });
+    }
+    // spell：把整個單字拼出來，多放兩個不相干的字母
+    return shuffle(SPELL_WORDS).slice(0, ROUND).map(function (w) {
+      var extra = shuffle(ABC.map(function (c) { return c.toLowerCase(); }).filter(function (c) { return w[0].indexOf(c) < 0; })).slice(0, 2);
+      return { spell: w, html: spellHtml(w, 0), choices: shuffle(w[0].split('').concat(extra)), speak: w[0], after: w[0] };
+    });
   }
 
   /* ---------- 遊戲流程 ---------- */
-  var G = { level: 0, qs: [], i: 0, first: [], clean: true, timer: 0 };
+  var G = { level: 0, qs: [], i: 0, first: [], clean: true, pos: 0, timer: 0 };
 
   function startLevel(level) {
     clearTimeout(G.timer);
-    G.level = level; G.qs = buildRound(level); G.i = 0; G.first = [];
+    G.level = level; G.qs = buildRound(LEVELS[level].key); G.i = 0; G.first = [];
     $('hint').textContent = LEVELS[level].hint;
     $('choices').dataset.n = LEVELS[level].n;
     show('game');
@@ -401,7 +488,7 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
   }
   function ask() {
     var q = G.qs[G.i];
-    G.clean = true;
+    G.clean = true; G.pos = 0;
     paintDots();
     var body = $('askBody');
     body.innerHTML = q.html;
@@ -409,11 +496,11 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
     var box = $('choices');
     box.classList.remove('locked');
     box.innerHTML = '';
-    options(q.answer, LEVELS[G.level].n).forEach(function (c, k) {
+    q.choices.forEach(function (c, k) {
       var b = document.createElement('button');
-      b.className = 'chunk choice c' + (k % 6 + 1);
+      b.className = 'chunk choice c' + (k % 6 + 1) + (q.wordy ? ' wordy' : '');
       b.textContent = c;
-      b.addEventListener('click', function () { answer(b, c); });
+      b.addEventListener('click', function () { q.spell ? spellTap(b, c) : answer(b, c); });
       box.appendChild(b);
     });
     say(q.speak);
@@ -427,8 +514,25 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
       return;
     }
     btn.classList.add('right');
-    $('choices').classList.add('locked');
     if (q.done) $('askBody').innerHTML = q.done;
+    win(q);
+  }
+  function spellTap(btn, c) {
+    var q = G.qs[G.i], word = q.spell[0];
+    if (c !== word[G.pos]) {
+      G.clean = false;
+      btn.classList.remove('nope'); void btn.offsetWidth; btn.classList.add('nope');
+      tone([220, 180], 0.12, 'triangle');
+      return;
+    }
+    btn.classList.remove('nope'); btn.classList.add('used'); btn.disabled = true;
+    G.pos++;
+    $('askBody').innerHTML = spellHtml(q.spell, G.pos);
+    if (G.pos < word.length) { tone([440 + G.pos * 70], 0.09); return; }
+    win(q);
+  }
+  function win(q) {
+    $('choices').classList.add('locked');
     tone([523, 659, 784], 0.1);
     say(q.after);
     G.first[G.i] = G.clean;
@@ -437,9 +541,9 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
     G.timer = setTimeout(function () { G.i < ROUND ? ask() : finish(); }, 1500);
   }
   function finish() {
-    var good = G.first.filter(Boolean).length;
+    var good = G.first.filter(Boolean).length, key = LEVELS[G.level].key;
     var st = good >= ROUND - 1 ? 3 : good >= ROUND - 3 ? 2 : 1;
-    if (st > save.best[G.level]) { save.best[G.level] = st; persist(); }
+    if (st > (save.best[key] || 0)) { save.best[key] = st; persist(); }
     $('resStars').innerHTML = stars(st, 3);
     $('resTitle').textContent = st === 3 ? '太厲害了！' : st === 2 ? '好棒喔！' : '完成了！';
     $('resScore').textContent = '一次就答對 ' + good + ' 題（共 ' + ROUND + ' 題）';
@@ -468,25 +572,26 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
     var box = $('levels');
     box.innerHTML = '';
     LEVELS.forEach(function (L, k) {
+      var best = save.best[L.key] || 0;
       var b = document.createElement('button');
-      b.className = 'chunk level c' + (k + 1);
+      b.className = 'chunk level c' + (k % 6 + 1);
       b.innerHTML = '<span class="pic">' + L.pic + '</span>' +
         '<span class="txt"><span class="name">' + L.name + '</span><span class="age">' + L.age + '</span></span>' +
-        '<span class="best" aria-label="最佳成績 ' + save.best[k] + ' 顆星">' + stars(save.best[k], 3) + '</span>';
+        '<span class="best" aria-label="最佳成績 ' + best + ' 顆星">' + stars(best, 3) + '</span>';
       b.addEventListener('click', function () { tone([660], 0.08); startLevel(k); });
       box.appendChild(b);
     });
   }
 
   /* ---------- 字母卡 ---------- */
-  var cur = 'A';
-  function paintCard(L, speak) {
-    cur = L;
-    var w = CARD[L], word = w[0];
+  var cur = 'A', curIdx = 0;
+  function paintCard(L, idx, speak) {
+    cur = L; curIdx = idx % WORDS[L].length;
+    var w = WORDS[L][curIdx], word = w[0], total = WORDS[L].length;
     $('flash').innerHTML = '<span class="pair">' + L + '<small>' + L.toLowerCase() + '</small></span>' +
       '<span class="emoji">' + w[1] + '</span>' +
       '<span class="word"><b>' + word[0].toUpperCase() + '</b>' + word.slice(1) + '</span>' +
-      '<span class="zh">' + w[2] + '</span>';
+      '<span class="zh">' + w[2] + (total > 1 ? '　' + (curIdx + 1) + ' / ' + total : '') + '</span>';
     Array.prototype.forEach.call($('abc').children, function (b) { b.classList.toggle('on', b.textContent === L); });
     if (speak) say(L + '. ' + word);
   }
@@ -496,23 +601,23 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
       var b = document.createElement('button');
       b.className = 'chunk c' + (k % 6 + 1);
       b.textContent = L;
-      b.addEventListener('click', function () { paintCard(L, true); });
+      b.addEventListener('click', function () { paintCard(L, 0, true); });
       box.appendChild(b);
     });
-    $('flash').addEventListener('click', function () { paintCard(cur, true); });
+    $('flash').addEventListener('click', function () { paintCard(cur, curIdx + 1, true); });
   }
 
   /* ---------- 綁定 ---------- */
   $('soundBtn').addEventListener('click', toggleSound);
   $('soundBtn2').addEventListener('click', toggleSound);
-  $('sayAgain').addEventListener('click', function () { if (G.qs[G.i]) say(G.qs[G.i].speak); });
+  $('sayAgain').addEventListener('click', function () { if (G.qs[G.i]) say(G.qs[G.i].speak || G.qs[G.i].after); });
   $('playAgain').addEventListener('click', function () { startLevel(G.level); });
   $('nextLevel').addEventListener('click', function () { startLevel(G.level + 1); });
-  $('openCards').addEventListener('click', function () { show('cards'); paintCard(cur, true); });
+  $('openCards').addEventListener('click', function () { show('cards'); paintCard(cur, curIdx, true); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-home]'), function (b) {
     b.addEventListener('click', function () { clearTimeout(G.timer); $('confetti').innerHTML = ''; show('home'); });
   });
 
-  paintSound(); paintHome(); buildCards(); paintCard('A', false);
+  paintSound(); paintHome(); buildCards(); paintCard('A', 0, false);
 })();
 </script>
