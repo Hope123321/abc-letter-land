@@ -103,7 +103,7 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
 .level .age { font-size: .95rem; font-weight: 700; opacity: .75; display: block; }
 .level .best { font-size: 1.15rem; letter-spacing: 2px; white-space: nowrap; }
 .star-off { opacity: .28; filter: grayscale(1); }
-.cards-btn { --bg: var(--paper); --bgd: var(--line); padding: 14px; font-size: 1.25rem; font-weight: 800; flex: none; min-height: 64px; }
+.cards-btn { --bg: var(--paper); --bgd: var(--line); padding: 16px; font-size: 1.6rem; font-weight: 800; flex: none; min-height: 92px; }
 
 /* ---------- game ---------- */
 .dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
@@ -184,8 +184,8 @@ button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
 .flash .word { grid-column: 1 / -1; font-size: clamp(1.8rem, 8vmin, 3rem); letter-spacing: .04em; }
 .flash .word b { color: #E0527C; }
 .flash .zh { grid-column: 1 / -1; }
-.abc { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 12px; align-content: start; padding: 2px 2px 12px; }
-.abc button { font-family: var(--font-letter); font-weight: 800; font-size: 1.8rem; height: 56px; border-radius: 16px; padding: 0; line-height: 1; box-shadow: 0 4px 0 var(--bgd); }
+.abc { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(68px, 17vmin, 104px), 1fr)); gap: 14px; align-content: start; padding: 4px 4px 14px; }
+.abc button { font-family: var(--font-letter); font-weight: 800; font-size: clamp(2.3rem, 9vmin, 3.4rem); height: clamp(68px, 17vmin, 104px); border-radius: 20px; padding: 0; line-height: 1; box-shadow: 0 4px 0 var(--bgd); }
 .abc button.on { outline: 4px solid var(--ink); outline-offset: 1px; }
 
 @keyframes bob { 50% { transform: translateY(-8px) rotate(-3deg); } }
